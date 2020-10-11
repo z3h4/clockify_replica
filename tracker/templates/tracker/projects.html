@@ -1,0 +1,28 @@
+{% extends 'tracker/base.html' %}
+
+{% block content %}
+{% for time_entry in time_entries %}
+<div class="time-tracker-entry">
+    <div class="task-name" style="display: inline-block; width: 20%;">
+        <!-- <span>{{ time_entry.task }}</span> -->
+        <input type="text" value="{{ time_entry.task }}" />
+    </div>
+
+    <div class="project-name" style="display: inline-block; width: 15%;">
+        <span>{{ time_entry.task.project }}</span>
+    </div>
+
+    <div class="task-start-time" style="display: inline-block; width: 20%;">
+        <span>{{ time_entry.start_time|date:'H:iA' }}</span>
+    </div>
+
+    <div class="task-end-time" style="display: inline-block; width: 20%;">
+        <span>{{ time_entry.end_time|date:'H:iA' }}</span>
+    </div>
+
+    <div class="task-date" style="display: inline-block; width: 20%;">
+        <span>{{ time_entry.date }}</span>
+    </div>
+</div>
+{% endfor %}
+{% endblock  %}
