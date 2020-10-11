@@ -19,7 +19,6 @@ class Task(models.Model):
 
 
 class TimeEntry(models.Model):
-    start_time = models.TimeField(auto_now_add=True)
-    end_time = models.TimeField()
-    date = models.DateField(auto_now_add=True)
+    start_time = models.DateTimeField(auto_now_add=True)
+    end_time = models.DateTimeField(null=True)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)

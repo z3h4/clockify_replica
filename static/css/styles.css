@@ -1,0 +1,134 @@
+@import url(https://fonts.googleapis.com/css?family=Roboto+Slab);
+
+body {
+    font-family: 'Roboto Slab';
+}
+
+.time-tracker-recorder-container {
+    width: 100%;
+    margin-bottom: 2.8572rem;
+    border: 1px solid #c6d2d9;
+}
+
+.task-name-container {
+    width: 80%;
+}
+
+.task-name-container > input{
+    width: 90%;
+    padding: 5px;
+    margin: 5px 10px 5px 10px;
+}
+
+.timer-container {
+    width: 10%;
+    font-size: 1.286rem;
+    font-weight: 500;
+}
+
+#createTaskForm > button{
+    color: #fff;
+    background-color: #03a9f4;
+    border-color: #03a9f4;
+    text-transform: uppercase;
+    min-width: 7.143rem;
+    cursor: pointer;
+    border: 1px solid transparent;
+    padding: .608rem .75rem;
+    border-radius: 3px;
+}
+
+.task-name-container, .timer-container, .time-tracker-recorder-container > button {
+    display: inline-block;
+}
+
+.time-tracker-card {
+    border: 1px solid #c6d2d9;
+    margin-bottom: 1.4286rem;
+}
+
+.time-tracker-card > .time-tracker-card-header {
+    /* border-radius: 1px 1px 0 0; */
+    padding-left: 1.4286rem;
+    display: flex;
+    min-height: 40px;
+    align-items: center;
+    /* justify-content: space-between; */
+    background-color: #e4eaee;
+    border-bottom: 1px solid #c6d2d9;
+}
+
+.time-tracker-card > .time-tracker-card-body {
+    /* padding-left: 1.4286rem; */
+    display: flex;
+    align-items: center;
+    width: 100%;
+    position: relative;
+    padding: .7143rem 0;
+}
+
+.task-name-col {
+    /* min-width: 200px; */
+    padding-left: .7143rem;
+    display: inline-block;
+    width: 100%;
+}
+
+#updateTaskNameForm {
+    width: 30%;
+}
+
+.project-name-col {
+    display: inline-block;
+    width: 15%;
+}
+
+.task-name-col > input{
+    width: 80%;
+    padding: .608rem .75rem;
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.task-start-time-col, .task-end-time-col {
+    display: inline-block;
+    width: 10%;
+}
+
+.task-time-col {
+    width: 15%;
+}
+
+input {
+    border: none;
+    height: 2.2rem;
+    outline: none;
+    font-family: 'Roboto Slab';
+}
+
+input:hover {
+    border: 1px solid grey;
+}
+
+.task-remove-row > .close{
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color:grey;
+    text-shadow: 0 1px 0 #fff;
+}
+
+.task-remove-row > .close:hover {
+    cursor: pointer;
+    color: #000;
+}
+
+
+.btn {
+    background-color: white;
+    border: none;
+    padding: 12px 16px;
+    font-size: 20px;
+    cursor: pointer;
+    outline: none;
+  }
