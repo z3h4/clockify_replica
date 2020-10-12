@@ -1,22 +1,17 @@
 from django.shortcuts import render, redirect
 from django.views.generic import View
 from django.http import HttpResponse
-
+from django.http import JsonResponse
+from django.forms.models import model_to_dict
 
 from datetime import datetime
 import json
-from django.http import JsonResponse
-from django.forms.models import model_to_dict
 
 from .models import Project, TimeEntry
 from .forms import *
 
 
-# def index(request):
-#     form = ProjectForm()
-#     return render(request, 'tracker/index.html', {'form': form})
-
-class ProjectList(View):
+class TimeTracker(View):
     def get(self, request):
         form = ProjectForm()
         task_form = TaskForm()
@@ -37,7 +32,14 @@ class ProjectList(View):
         return render(request, 'tracker/projects.html', context={'projects': projects, 'time_entries': time_entries, 'form': form, 'task_form': task_form})
 
 
+class ProjectList(View):
+    def get(self, request):
+        projects = Project.objects.order_by('-id').values()
+        return JsonResponse({'projects': list(projects)}, status=200)
+
 # TODO: The name should create a new entry if not present in the database
+
+
 class TaskUpdate(View):
     def post(self, request, id):
         data = json.loads(request.body)

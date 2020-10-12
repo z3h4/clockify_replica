@@ -11,7 +11,7 @@ body {
 }
 
 .task-name-container {
-    width: 80%;
+    width: 50%;
 }
 
 .task-name-container > input{
@@ -24,6 +24,12 @@ body {
     width: 10%;
     font-size: 1.286rem;
     font-weight: 500;
+}
+
+.project-name-container {
+    display: inline-block;
+    position: relative;
+    width: 30%;
 }
 
 #createTaskForm > button{

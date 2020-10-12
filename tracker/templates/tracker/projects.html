@@ -1,28 +1,89 @@
 {% extends 'tracker/base.html' %}
 
 {% block content %}
-{% for time_entry in time_entries %}
-<div class="time-tracker-entry">
-    <div class="task-name" style="display: inline-block; width: 20%;">
-        <!-- <span>{{ time_entry.task }}</span> -->
-        <input type="text" value="{{ time_entry.task }}" />
-    </div>
+<div class="time-tracker-recorder-container">
+    <form id="createTaskForm" method="post" data-url="{% url 'time_entry_create_url' %}">
+        {% csrf_token %}
+        {% for field in task_form %}
+        <div class="task-name-container" id="taskName">
+            {{ field }}
+        </div>
+        {% endfor %}
 
-    <div class="project-name" style="display: inline-block; width: 15%;">
-        <span>{{ time_entry.task.project }}</span>
-    </div>
 
-    <div class="task-start-time" style="display: inline-block; width: 20%;">
-        <span>{{ time_entry.start_time|date:'H:iA' }}</span>
-    </div>
+        <div id="autocomplete_result" style="display: none;"></div>
 
-    <div class="task-end-time" style="display: inline-block; width: 20%;">
-        <span>{{ time_entry.end_time|date:'H:iA' }}</span>
-    </div>
 
-    <div class="task-date" style="display: inline-block; width: 20%;">
-        <span>{{ time_entry.date }}</span>
-    </div>
+        <div class="project-name-container">
+            <a href="" id="projectDropdownToggle" onclick="showDropdown(event)"></a>
+            <div class="dropdown-content" id="dropdownContent">
+
+            </div>
+        </div>
+
+        <div class="timer-container">
+            <span id="taskTimer">00:00:00</span>
+        </div>
+
+        <button type="button" class="" id="startButton">Start</button>
+    </form>
 </div>
-{% endfor %}
+
+
+<div class="time-tracker-card-container" id="time-tracker-list">
+    {% for time_entry in time_entries %}
+    <div class="time-tracker-card">
+        <div class="time-tracker-card-header">
+            <div class="task-date" style="display: inline-block; width: 20%;">
+                <span>{{ time_entry.date }}</span>
+            </div>
+            <div class="total-task-time">
+                <span>Total</span>
+                <span></span>
+            </div>
+        </div>
+
+        <div class="time-tracker-card-body">
+            {% comment %} <div class="task-name-col" style="display: inline-block; width: 20%;">
+                <input type="text" value="{{ time_entry.task }}" data-id={{ time_entry.id }}
+                    onfocusout="taskNameChanged(this)" />
+            </div> {% endcomment %}
+
+            <form id="updateTaskNameForm" method="post">
+                {% csrf_token %}
+
+                <div class="task-name-col">
+                    {% comment %} {{ task_form.name }} {% endcomment %}
+                    <input type="text" value="{{ time_entry.task }}" data-id={{ time_entry.task_id }}
+                        onfocusout="taskNameChanged(this)" />
+                </div>
+            </form>
+
+            <div class="project-name-col">
+                <span>{{ time_entry.task.project }}</span>
+            </div>
+
+            <div class="task-start-time-col">
+                <span>{{ time_entry.start_time|date:'H:iA' }}</span>
+            </div>
+
+            <div class="task-end-time-col">
+                <span>{{ time_entry.end_time|date:'H:iA' }}</span>
+            </div>
+
+            <div class="task-time-col">
+                <input type="text" value="{{ time_entry.time_spent }}" />
+            </div>
+
+            <div class="task-remove-row">
+                {% comment %} <span class="close">×</span> {% endcomment %}
+                <button class="btn" onclick="onTaskDelete(this)" data-id={{ time_entry.task_id }}>
+                    <i class="fa fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
 {% endblock  %}
