@@ -4,7 +4,8 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.forms.models import model_to_dict
 
-from datetime import datetime
+# from datetime import datetime
+from django.utils import timezone
 import json
 
 from .models import Project, TimeEntry
@@ -22,13 +23,12 @@ class TimeTracker(View):
             'task__project').all().filter(end_time__isnull=False)
 
         for entry in time_entries:
-            timeDelta = (entry.end_time - entry.start_time).seconds
-            hours, remainder = divmod(timeDelta, 3600)
+            # timeDelta = (entry.end_time - entry.start_time).seconds
+            hours, remainder = divmod(entry.task_time, 3600)
             minutes, seconds = divmod(remainder, 60)
             entry.time_spent = '{:02}:{:02}:{:02}'.format(
                 int(hours), int(minutes), int(seconds))
             entry.date = entry.end_time.date
-            # entry.time_spent = entry.end_time - entry.start_time
 
         return render(request, 'tracker/projects.html', context={'projects': projects, 'time_entries': time_entries, 'form': form, 'task_form': task_form})
 
@@ -65,7 +65,7 @@ class TimeEntryCreate(View):
         try:
             task = Task.objects.get(name=data['name'])
             time_entry = TimeEntry.objects.create(
-                task_id=task.id, start_time=datetime.now())
+                task_id=task.id, start_time=timezone.now())
             return JsonResponse({'time_entry': model_to_dict(time_entry)}, status=200)
             # return JsonResponse({'result': 'ok'}, status=200)
         except Task.DoesNotExist:
@@ -81,22 +81,51 @@ class TimeEntryUpdate(View):
         except TimeEntry.DoesNotExist:
             return JsonResponse({'result': 'ok'}, status=404)
 
+        print('!!!!!!!!!!!!!!!!!!')
+        print(time_entry)
+        print(data)
+
         if 'start_time' in data:
             datetime_object = convert_to_datetime(
                 time_entry.start_time, data['start_time'])
 
             time_entry.start_time = datetime_object
+            time_entry.task_time = (
+                time_entry.end_time - time_entry.start_time).total_seconds()
             time_entry.save()
 
             return JsonResponse({'time_entry': model_to_dict(time_entry)}, status=200)
         elif 'end_time' in data:
-            datetime_object = convert_to_datetime(
-                time_entry.end_time, data['end_time'])
+            print(time_entry.end_time)
 
-            time_entry.end_time = datetime_object
-            time_entry.save()
+            if time_entry.end_time is None:
+                print('------------')
+                time_entry.end_time = timezone.now()
+                time_entry.task_time = (
+                    time_entry.end_time - time_entry.start_time).total_seconds()
+                time_entry.save()
 
-            return JsonResponse({'time_entry': model_to_dict(time_entry)}, status=200)
+                return JsonResponse({'time_entry': model_to_dict(time_entry)}, status=200)
+            else:
+                datetime_object = convert_to_datetime(
+                    time_entry.end_time, data['end_time'])
+                time_entry.end_time = datetime_object
+                time_entry.task_time = (
+                    time_entry.end_time - time_entry.start_time).total_seconds()
+                time_entry.save()
+
+                return JsonResponse({'time_entry': model_to_dict(time_entry)}, status=200)
+
+
+class TimeEntryDelete(View):
+    def post(self, request, id):
+        try:
+            time_entry = TimeEntry.objects.get(id=id)
+        except TimeEntry.DoesNotExist:
+            return JsonResponse({'result': 'ok'}, status=404)
+
+        time_entry.delete()
+        return JsonResponse({'result': 'ok'}, status=200)
 
 # class TimeEntryList(View):
 #     def get(self, request):

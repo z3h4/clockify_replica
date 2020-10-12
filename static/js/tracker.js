@@ -1,32 +1,49 @@
 const startButton = document.querySelector("#startButton");
 
-startButton.addEventListener("click", (e) => {
+startButton.addEventListener("click", async(e) => {
     if (startButton.innerHTML === "Start") {
-        startTimer();
-        createTimeEntry();
         startButton.innerHTML = "Stop";
+        startTimer();
+        
+        try{
+            await createTimeEntry();
+        }
+        catch (ex) {
+            console.log(ex);
+        }
     } else {
-        stopTimer();
         startButton.innerHTML = "Start";
+        stopTimer();
+
+        try{
+            await updateEndTime(input.getAttribute('data-id'), document.getElementById('taskTimer').innerHTML);
+        }
+        catch (ex) {
+            console.log(ex);
+        }
     }
 });
 
 createTimeEntry = () => {
-    let xhr = new XMLHttpRequest();
-    xhr.open('post', '/tracker/time_entry_created', true);
-    xhr.setRequestHeader("X-CSRFToken", document.querySelector("input[name=csrfmiddlewaretoken]").value);
-
-    xhr.onload = function() {        
-        if (this.status === 200) {
-            console.log("SUCCESS");
-            console.log(xhr.response);
-            console.log(typeof xhr.response);
-            const response = JSON.parse(xhr.response);
-            const time_entry = response.time_entry;
+    return new Promise(function (resolve, reject) {
+        let xhr = new XMLHttpRequest();
+        xhr.open('post', '/tracker/time_entry_created', true);
+        xhr.setRequestHeader("X-CSRFToken", document.querySelector("input[name=csrfmiddlewaretoken]").value);
+    
+        xhr.onload = function() {        
+            if (this.status === 200) {
+                const response = JSON.parse(xhr.response);
+                const time_entry = response.time_entry;
+                input.setAttribute('data-id', time_entry.id);
+                resolve("SUCCESS");
+            }
+            else {
+                reject(new Error(`Response status: ${this.status}`));
+            }
         }
-    }
-    // console.log(input.value);
-    xhr.send(JSON.stringify({ projectId: 1, name: input.value}));
+        xhr.send(JSON.stringify({ projectId: 1, name: input.value}));
+    });
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -69,6 +86,7 @@ updateStartTime = (timeEntryId, newTime) => {
 };
 
 updateEndTime = (timeEntryId, newTime) => {
+    console.log(newTime);
     return new Promise(function (resolve, reject) {
         let xhr = new XMLHttpRequest();
         xhr.open('post', '/tracker/time_entry/' + timeEntryId +'/update', true);
@@ -96,10 +114,10 @@ calculateTaskTime = (startTime, endTime) => {
 }
 
 
-formatTaskTime = (diff) => {
+formatTaskTime = (diff, dataId) => {
     const minutes = diff % 60;
     const hours = Math.floor(diff / 60);
-    const seconds = document.getElementById('taskTimeInput').value.split(":")[2];
+    const seconds = document.querySelector('[data-task-id="' + dataId + '"]').value.split(":")[2];
     
     formattedTime = (hours === 0 ? '00' : hours > 9 ? hours : ('0' + hours)) + ':';
     formattedTime += (minutes === 0 ? '00' : minutes > 9 ? minutes : ('0' + minutes)) + ':';
@@ -107,64 +125,61 @@ formatTaskTime = (diff) => {
     return formattedTime;
 }
 
+var taskStartTimeInputs = document.getElementsByClassName('task-start-time-input');
 
+for(var i = 0; i < taskStartTimeInputs.length; i++) {
+    taskStartTimeInputs[i].addEventListener('change', async function() {
+        let newTime = this.value.replace(/\s/g, '')
+        var result = newTime.match(/(((0[1-9])|(1[0-2])):([0-5])([0-9])(A|P|)(M))/);
+        
+        if (!result)
+            this.value = this.defaultValue;
+        else {
+            // valid time, update entry
+            try {
+                let dataId = this.getAttribute('data-task-start-id');
+                await updateStartTime(dataId, newTime);
+                this.defaultValue = newTime;
 
-document.getElementById('taskStartTimeInput').addEventListener('change', async function (e) {
-    let newTime = this.value.replace(/\s/g, '')
-    var result = newTime.match(/(((0[1-9])|(1[0-2])):([0-5])([0-9])(A|P|)(M))/);
-    
-    if (!result)
-        this.value = this.defaultValue;
-    else {
-        // valid time, update entry
-        try {
-            await updateStartTime(this.getAttribute('data-id'), newTime);
-            this.defaultValue = newTime;
-
-            const diff = calculateTaskTime(newTime, document.getElementById('taskEndTimeInput').value);
-            const formattedTime = formatTaskTime(diff);
-            
-            document.getElementById('taskTimeInput').value = formattedTime;
+                const diff = calculateTaskTime(newTime, document.querySelector('[data-task-start-id="' + dataId + '"]').value);
+                const formattedTime = formatTaskTime(diff, dataId);
+                
+                document.querySelector('[data-task-id="' + dataId + '"]').value = formattedTime;
+            }
+            catch (ex) {
+                console.log("Error updating start time", ex);
+            }
         }
-        catch (ex) {
-            console.log("Error updating start time", ex);
+    })
+}
+
+var taskEndTimeInputs = document.getElementsByClassName('task-end-time-input');
+
+for(var i = 0; i < taskEndTimeInputs.length; i++) {
+    taskEndTimeInputs[i].addEventListener('change', async function() {
+        let newTime = this.value.replace(/\s/g, '')
+        var result = newTime.match(/(((0[1-9])|(1[0-2])):([0-5])([0-9])(A|P|)(M))/);
+        
+        if (!result)
+            this.value = this.defaultValue;
+        else {
+            // valid time, update entry
+            try {
+                let dataId = this.getAttribute('data-task-end-id');
+                await updateEndTime(dataId, newTime);
+                this.defaultValue = newTime;
+
+                const diff = calculateTaskTime(document.querySelector('[data-task-start-id="' + dataId + '"]').value, newTime);
+                const formattedTime = formatTaskTime(diff, dataId);
+                
+                document.querySelector('[data-task-id="' + dataId + '"]').value = formattedTime;
+            }
+            catch (ex) {
+                console.log("Error updating start time", ex);
+            }
         }
-    }
-});
-
-document.getElementById('taskEndTimeInput').addEventListener('change', async function (e) {
-    let newTime = this.value.replace(/\s/g, '')
-    var result = newTime.match(/(((0[1-9])|(1[0-2])):([0-5])([0-9])(A|P|)(M))/);
-    
-    if (!result)
-        this.value = this.defaultValue;
-    else {
-        // valid time, update entry
-        try {
-            await updateEndTime(this.getAttribute('data-id'), newTime);
-            this.defaultValue = newTime;
-
-            const diff = calculateTaskTime(document.getElementById('taskStartTimeInput').value, newTime);
-            const formattedTime = formatTaskTime(diff);
-            
-            document.getElementById('taskTimeInput').value = formattedTime;
-        }
-        catch (ex) {
-            console.log("Error updating start time", ex);
-        }
-    }
-})
-
-// document.addEventListener("click", function (e) {
-//     // var container = document.getElementsByClassName('project-name-container')[0];
-
-//     if (currentTimeElement !== e)
-//         currentTimeElement = null;
-// });
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////
+    })
+}
 
 
 
@@ -189,4 +204,20 @@ taskNameChanged = (e) => {
 onTaskDelete = (e) => {
     const dataId = e.getAttribute("data-id");
     console.log(dataId);
+
+    return new Promise(function (resolve, reject) {
+        let xhr = new XMLHttpRequest();
+        xhr.open('post', '/tracker/' + dataId + '/time_entry_deleted', true);
+        xhr.setRequestHeader("X-CSRFToken", document.querySelector("input[name=csrfmiddlewaretoken]").value);
+    
+        xhr.onload = function() {        
+            if (this.status === 200) {
+                document.querySelector('[data-card-id="' + dataId + '"]').remove();
+            }
+            else {
+                reject(new Error(`Response status: ${this.status}`));
+            }
+        }
+        xhr.send();
+    });
 }

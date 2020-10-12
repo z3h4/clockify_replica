@@ -80,7 +80,7 @@ body {
     width: 100%;
 }
 
-#updateTaskNameForm {
+.update-task-name-form {
     width: 30%;
 }
 

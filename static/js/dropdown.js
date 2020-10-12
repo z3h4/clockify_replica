@@ -15,7 +15,7 @@ getProjectList = () => {
                 resolve(projectItems);
             }
             else {
-                reject(new Error(this.status));
+                reject(new Error(`Response status: ${this.status}`));
             }
         }
         xhr.send();

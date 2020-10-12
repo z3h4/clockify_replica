@@ -29,10 +29,11 @@
     </form>
 </div>
 
+{% load tz %}
 
 <div class="time-tracker-card-container" id="time-tracker-list">
     {% for time_entry in time_entries %}
-    <div class="time-tracker-card">
+    <div class="time-tracker-card" data-card-id={{time_entry.id}}>
         <div class="time-tracker-card-header">
             <div class="task-date" style="display: inline-block; width: 20%;">
                 <span>{{ time_entry.date }}</span>
@@ -49,7 +50,7 @@
                     onfocusout="taskNameChanged(this)" />
             </div> {% endcomment %}
 
-            <form id="updateTaskNameForm" method="post">
+            <form class="update-task-name-form" method="post">
                 {% csrf_token %}
 
                 <div class="task-name-col">
@@ -63,37 +64,28 @@
                 <span>{{ time_entry.task.project }}</span>
             </div>
 
-
             <div class="task-start-end-time-col">
                 <div class="task-start-time-col">
-                    <input type="text" id="taskStartTimeInput" value="{{ time_entry.start_time|date:'H:iA' }}"
-                        data-id={{ time_entry.id }} />
+                    <input type="text" class="task-start-time-input" value="{{ time_entry.start_time|date:'h:iA' }}"
+                        data-task-start-id={{ time_entry.id }} />
                 </div>
                 <span>-</span>
                 <div class="task-end-time-col">
-                    <input type="text" id="taskEndTimeInput" value="{{ time_entry.end_time|date:'H:iA' }}"
-                        data-id={{ time_entry.id }} />
+                    <input type="text" class="task-end-time-input" value="{{ time_entry.end_time|date:'h:iA' }}"
+                        data-task-end-id={{ time_entry.id }} />
                 </div>
             </div>
 
-
-            <!-- <div class="task-start-time-col">
-                <input type="text" value="{{ time_entry.start_time|date:'H:iA' }}" />
-                <span>{{ time_entry.start_time|date:'H:iA' }}</span>
-            </div>
-
-            <div class="task-end-time-col">
-                <span>{{ time_entry.end_time|date:'H:iA' }}</span>
-            </div> -->
-
             <div class="task-time-col">
-                <input type="text" id="taskTimeInput" value="{{ time_entry.time_spent }}" readonly />
-                <!-- <span id="taskTimeInput">{{ time_entry.time_spent }}</span> -->
+                <input type="text" value="{{ time_entry.time_spent }}" readonly data-task-id={{ time_entry.id }} />
+
+                <!-- <input type="text" id="taskTimeInput" value="{{ time_entry.task_time }}" readonly
+                    data-task-id={{ time_entry.id }} /> -->
             </div>
 
             <div class="task-remove-row">
                 {% comment %} <span class="close">×</span> {% endcomment %}
-                <button class="btn" onclick="onTaskDelete(this)" data-id={{ time_entry.task_id }}>
+                <button class="btn" onclick="onTaskDelete(this)" data-id={{ time_entry.id }}>
                     <i class="fa fa-trash"></i>
                 </button>
             </div>

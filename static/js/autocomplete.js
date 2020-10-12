@@ -16,7 +16,7 @@ getTaskList = () => {
                 resolve(taskItems);
             }
             else {
-                reject(new Error(this.status));
+                reject(new Error(`Response status: ${this.status}`));
             }
         }
         xhr.send();
@@ -24,13 +24,15 @@ getTaskList = () => {
 }
 
  
-function popupClearAndHide() {
+popupClearAndHide = () => {
     autocomplete_result.innerHTML = "";
     autocomplete_result.style.display = "none";
 }
 
-function autocomplete(val) {
+autocomplete = (val) => {
     let item_return = [];
+    if (val.length === 0) 
+        return taskList;
   
     for (i = 0; i < taskList.length; i++) {
       if (val.toLowerCase() === taskList[i].slice(0, val.length).toLowerCase()) {
@@ -42,40 +44,40 @@ function autocomplete(val) {
 }
   
 filterData = (input_val) => {
-    if (input_val.length > 0) {
-        autocomplete_results = document.getElementById("autocomplete_result");
-        autocomplete_results.innerHTML = '';
-        
-        let items_to_show = autocomplete(input_val);
-        
-        for (i = 0; i < items_to_show.length; i++) {
-            let element = document.createElement("P");
-            element.innerHTML = items_to_show[i];
-
-            element.addEventListener("click", function(e) {
-                e.stopPropagation();
-                
-                input.value = this.innerText;
-                popupClearAndHide();
-
-                // Start the timer
-                startButton.click();
-            });
-
-            autocomplete_results.appendChild(element);
+    autocomplete_results = document.getElementById("autocomplete_result");
+    autocomplete_results.innerHTML = '';
     
-        }
-        autocomplete_results.style.display = 'block';
-    } 
-    else {
-        popupClearAndHide();
+    let items_to_show = autocomplete(input_val);
+    
+    for (i = 0; i < items_to_show.length; i++) {
+        let element = document.createElement("p");
+        element.innerHTML = items_to_show[i];
+
+        element.addEventListener("click", function(e) {
+            e.stopPropagation();
+            
+            input.value = this.innerText;
+            popupClearAndHide();
+
+            // Start the timer
+            startButton.click();
+        });
+
+        autocomplete_results.appendChild(element);
+
     }
+    autocomplete_results.style.display = 'block';
 }
 
 onKeyUp = function(e) {
-    input_val = this.value; 
+    let input_val = this.value; 
     filterData(input_val);
 }
+
+input.addEventListener('click', function() {
+    let input_val = this.value; 
+    filterData(input_val);
+});
 
 initAutocompleteList = async() => {
     try {
@@ -89,7 +91,7 @@ initAutocompleteList = async() => {
 input.addEventListener("keyup", onKeyUp);
 
 document.addEventListener("click", function (e) {
-    if (autocomplete_results !== e.target) {    
+    if (autocomplete_results !== e.target && input !== e.target) {    
         popupClearAndHide();
     }
 });
