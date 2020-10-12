@@ -25,7 +25,6 @@ getProjectList = () => {
 populateDropdown = () => {    
     for (i = 0; i < projectList.length; i++) {
         let element = document.createElement("a");
-        
         element.setAttribute('href',"");
         element.setAttribute('data-id', projectList[i].id);
         element.innerHTML = projectList[i].name;

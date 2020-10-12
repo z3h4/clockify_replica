@@ -139,7 +139,7 @@ input:hover {
     border: 1px solid grey;
 }
 
-#taskTimeInput {
+.task-time-col input {
     border: none;
     font-weight: bold;
 }

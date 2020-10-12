@@ -18,17 +18,12 @@ class TimeTracker(View):
         form = ProjectForm()
         task_form = TaskForm()
         projects = Project.objects.all()
-        # time_entries = TimeEntry.objects.all()
         time_entries = TimeEntry.objects.select_related(
             'task__project').all().filter(end_time__isnull=False)
 
         for entry in time_entries:
-            # timeDelta = (entry.end_time - entry.start_time).seconds
-            hours, remainder = divmod(entry.task_time, 3600)
-            minutes, seconds = divmod(remainder, 60)
-            entry.time_spent = '{:02}:{:02}:{:02}'.format(
-                int(hours), int(minutes), int(seconds))
-            entry.date = entry.end_time.date
+            entry.time_spent = calculate_time_spent(entry.task_time)
+            entry.date = entry.end_time.date()
 
         return render(request, 'tracker/projects.html', context={'projects': projects, 'time_entries': time_entries, 'form': form, 'task_form': task_form})
 
@@ -77,13 +72,10 @@ class TimeEntryUpdate(View):
     def post(self, request, id):
         data = json.loads(request.body)
         try:
-            time_entry = TimeEntry.objects.get(id=id)
+            time_entry = TimeEntry.objects.select_related(
+                'task__project').get(id=id)
         except TimeEntry.DoesNotExist:
             return JsonResponse({'result': 'ok'}, status=404)
-
-        print('!!!!!!!!!!!!!!!!!!')
-        print(time_entry)
-        print(data)
 
         if 'start_time' in data:
             datetime_object = convert_to_datetime(
@@ -94,18 +86,28 @@ class TimeEntryUpdate(View):
                 time_entry.end_time - time_entry.start_time).total_seconds()
             time_entry.save()
 
-            return JsonResponse({'time_entry': model_to_dict(time_entry)}, status=200)
+            time_spent = calculate_time_spent(time_entry.task_time)
+
+            return JsonResponse({'time_entry': model_to_dict(time_entry), 'time_spent': time_spent}, status=200)
         elif 'end_time' in data:
             print(time_entry.end_time)
 
             if time_entry.end_time is None:
-                print('------------')
                 time_entry.end_time = timezone.now()
                 time_entry.task_time = (
                     time_entry.end_time - time_entry.start_time).total_seconds()
                 time_entry.save()
 
-                return JsonResponse({'time_entry': model_to_dict(time_entry)}, status=200)
+                new_entries = {
+                    'task_name': time_entry.task.name,
+                    'project_name': time_entry.task.project.name,
+                    'start_time': timezone.localtime(time_entry.start_time).strftime('%I:%M%p'),
+                    'end_time': timezone.localtime(time_entry.end_time).strftime('%I:%M%p'),
+                    'time_spent': calculate_time_spent(time_entry.task_time),
+                    'date': time_entry.end_time.strftime('%b %d, %Y')
+                }
+
+                return JsonResponse({'time_entry': model_to_dict(time_entry), 'new_entries': new_entries}, status=200)
             else:
                 datetime_object = convert_to_datetime(
                     time_entry.end_time, data['end_time'])
@@ -114,7 +116,9 @@ class TimeEntryUpdate(View):
                     time_entry.end_time - time_entry.start_time).total_seconds()
                 time_entry.save()
 
-                return JsonResponse({'time_entry': model_to_dict(time_entry)}, status=200)
+                time_spent = calculate_time_spent(time_entry.task_time)
+
+                return JsonResponse({'time_entry': model_to_dict(time_entry), 'time_spent': time_spent}, status=200)
 
 
 class TimeEntryDelete(View):

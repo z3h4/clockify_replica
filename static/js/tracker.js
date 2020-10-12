@@ -16,7 +16,7 @@ startButton.addEventListener("click", async(e) => {
         stopTimer();
 
         try{
-            await updateEndTime(input.getAttribute('data-id'), document.getElementById('taskTimer').innerHTML);
+            await updateEndTimeAndAppendToTaskList(input.getAttribute('data-id'), document.getElementById('taskTimer').innerHTML);
         }
         catch (ex) {
             console.log(ex);
@@ -46,26 +46,37 @@ createTimeEntry = () => {
 
 }
 
-/////////////////////////////////////////////////////////////////////////////////////
-var currentTimeElement;
+updateEndTimeAndAppendToTaskList = (timeEntryId, newTime) => {
+    return new Promise(function (resolve, reject) {
+        let xhr = new XMLHttpRequest();
+        xhr.open('post', '/tracker/time_entry/' + timeEntryId +'/update', true);
+        xhr.setRequestHeader("X-CSRFToken", document.querySelector("input[name=csrfmiddlewaretoken]").value);
+    
+        xhr.onload = function() {        
+            if (this.status === 200) {
+                const response = JSON.parse(xhr.response);
+                const time_entry = response.time_entry;
+                const new_entries = response.new_entries;
+                console.log(response);
 
-timeUpdate = () => {
-    //
+                let element = document.createElement("div");
+                element.setAttribute('class', 'time-tracker-card');
+                element.setAttribute('data-card-id', time_entry.id);
+                element.innerHTML = '<div class="time-tracker-card-header"><div class="task-date" style="display: inline-block; width: 20%;"><span>' + new_entries.date + '</span></div></div><div class="time-tracker-card-body"><form class="update-task-name-form" method="post"><div class="task-name-col"><input type="text" value="' + new_entries.task_name + '" data-id=' + time_entry.task_id + 'onfocusout="taskNameChanged(this)" /></div></form><div class="project-name-col"><span>' + new_entries.project_name + '</span></div><div class="task-start-end-time-col"><div class="task-start-time-col"><input type="text" class="task-start-time-input" value="' + new_entries.start_time + '" data-task-start-id=' + time_entry.id + ' /></div><span>-</span><div class="task-end-time-col"><input type="text" class="task-end-time-input" value="' + new_entries.end_time + '" data-task-end-id=' + time_entry.id + ' /></div></div><div class="task-time-col"><input type="text" value="' + new_entries.time_spent + '" readonly data-task-id=' + time_entry.id + ' /></div><div class="task-remove-row"><button class="btn" onclick="onTaskDelete(this)" data-id=' + time_entry.id + '><i class="fa fa-trash"></i></button></div></div>'
+
+                document.getElementById('timeTrackerList').appendChild(element);
+
+                document.getElementById('taskName').querySelectorAll("input")[0].value = '';
+
+                resolve("SUCCESS");
+            }
+            else {
+                reject(new Error(this.status));
+            }
+        }
+        xhr.send(JSON.stringify({ end_time: newTime }));
+    });
 }
-
-// editTaskTime = (e) => {
-//     if (currentTimeElement === e)
-//         return;
-//     currentTimeElement = e;
-
-//     let currentTime = e.value;
-
-//     let hour = currentTime.substring(0, 2);
-//     let minute = currentTime.substring(3, 5);
-
-//     let editedTime = currentTime.substring(0, currentTime.length - 2);
-//     console.log(hour + " " + minute);
-// }
 
 updateStartTime = (timeEntryId, newTime) => {
     return new Promise(function (resolve, reject) {
@@ -75,7 +86,9 @@ updateStartTime = (timeEntryId, newTime) => {
     
         xhr.onload = function() {        
             if (this.status === 200) {
-                resolve("SUCCESS");
+                const response = JSON.parse(xhr.response);
+                const time_spent = response.time_spent;
+                resolve(time_spent);
             }
             else {
                 reject(new Error(this.status));
@@ -86,7 +99,6 @@ updateStartTime = (timeEntryId, newTime) => {
 };
 
 updateEndTime = (timeEntryId, newTime) => {
-    console.log(newTime);
     return new Promise(function (resolve, reject) {
         let xhr = new XMLHttpRequest();
         xhr.open('post', '/tracker/time_entry/' + timeEntryId +'/update', true);
@@ -94,7 +106,9 @@ updateEndTime = (timeEntryId, newTime) => {
     
         xhr.onload = function() {        
             if (this.status === 200) {
-                resolve("SUCCESS");
+                const response = JSON.parse(xhr.response);
+                const time_spent = response.time_spent;
+                resolve(time_spent);
             }
             else {
                 reject(new Error(this.status));
@@ -138,13 +152,9 @@ for(var i = 0; i < taskStartTimeInputs.length; i++) {
             // valid time, update entry
             try {
                 let dataId = this.getAttribute('data-task-start-id');
-                await updateStartTime(dataId, newTime);
+                const task_time = await updateStartTime(dataId, newTime);
                 this.defaultValue = newTime;
-
-                const diff = calculateTaskTime(newTime, document.querySelector('[data-task-start-id="' + dataId + '"]').value);
-                const formattedTime = formatTaskTime(diff, dataId);
-                
-                document.querySelector('[data-task-id="' + dataId + '"]').value = formattedTime;
+                document.querySelector('[data-task-id="' + dataId + '"]').value = task_time;
             }
             catch (ex) {
                 console.log("Error updating start time", ex);
@@ -166,13 +176,10 @@ for(var i = 0; i < taskEndTimeInputs.length; i++) {
             // valid time, update entry
             try {
                 let dataId = this.getAttribute('data-task-end-id');
-                await updateEndTime(dataId, newTime);
+                const task_time = await updateEndTime(dataId, newTime);
                 this.defaultValue = newTime;
-
-                const diff = calculateTaskTime(document.querySelector('[data-task-start-id="' + dataId + '"]').value, newTime);
-                const formattedTime = formatTaskTime(diff, dataId);
                 
-                document.querySelector('[data-task-id="' + dataId + '"]').value = formattedTime;
+                document.querySelector('[data-task-id="' + dataId + '"]').value = task_time;
             }
             catch (ex) {
                 console.log("Error updating start time", ex);
