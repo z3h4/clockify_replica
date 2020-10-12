@@ -9,6 +9,7 @@ import json
 
 from .models import Project, TimeEntry
 from .forms import *
+from .utils import *
 
 
 class TimeTracker(View):
@@ -63,13 +64,39 @@ class TimeEntryCreate(View):
         # TODO: trim the input
         try:
             task = Task.objects.get(name=data['name'])
-            time_entry = TimeEntry.objects.create(task_id=task.id)
+            time_entry = TimeEntry.objects.create(
+                task_id=task.id, start_time=datetime.now())
             return JsonResponse({'time_entry': model_to_dict(time_entry)}, status=200)
             # return JsonResponse({'result': 'ok'}, status=200)
         except Task.DoesNotExist:
             # TODO: Create new task
             print("Xxxxxxxxxxxxafhgjhaksjasxxa")
 
+
+class TimeEntryUpdate(View):
+    def post(self, request, id):
+        data = json.loads(request.body)
+        try:
+            time_entry = TimeEntry.objects.get(id=id)
+        except TimeEntry.DoesNotExist:
+            return JsonResponse({'result': 'ok'}, status=404)
+
+        if 'start_time' in data:
+            datetime_object = convert_to_datetime(
+                time_entry.start_time, data['start_time'])
+
+            time_entry.start_time = datetime_object
+            time_entry.save()
+
+            return JsonResponse({'time_entry': model_to_dict(time_entry)}, status=200)
+        elif 'end_time' in data:
+            datetime_object = convert_to_datetime(
+                time_entry.end_time, data['end_time'])
+
+            time_entry.end_time = datetime_object
+            time_entry.save()
+
+            return JsonResponse({'time_entry': model_to_dict(time_entry)}, status=200)
 
 # class TimeEntryList(View):
 #     def get(self, request):

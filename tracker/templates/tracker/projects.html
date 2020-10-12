@@ -37,10 +37,10 @@
             <div class="task-date" style="display: inline-block; width: 20%;">
                 <span>{{ time_entry.date }}</span>
             </div>
-            <div class="total-task-time">
+            <!-- <div class="total-task-time">
                 <span>Total</span>
                 <span></span>
-            </div>
+            </div> -->
         </div>
 
         <div class="time-tracker-card-body">
@@ -63,16 +63,32 @@
                 <span>{{ time_entry.task.project }}</span>
             </div>
 
-            <div class="task-start-time-col">
+
+            <div class="task-start-end-time-col">
+                <div class="task-start-time-col">
+                    <input type="text" id="taskStartTimeInput" value="{{ time_entry.start_time|date:'H:iA' }}"
+                        data-id={{ time_entry.id }} />
+                </div>
+                <span>-</span>
+                <div class="task-end-time-col">
+                    <input type="text" id="taskEndTimeInput" value="{{ time_entry.end_time|date:'H:iA' }}"
+                        data-id={{ time_entry.id }} />
+                </div>
+            </div>
+
+
+            <!-- <div class="task-start-time-col">
+                <input type="text" value="{{ time_entry.start_time|date:'H:iA' }}" />
                 <span>{{ time_entry.start_time|date:'H:iA' }}</span>
             </div>
 
             <div class="task-end-time-col">
                 <span>{{ time_entry.end_time|date:'H:iA' }}</span>
-            </div>
+            </div> -->
 
             <div class="task-time-col">
-                <input type="text" value="{{ time_entry.time_spent }}" />
+                <input type="text" id="taskTimeInput" value="{{ time_entry.time_spent }}" readonly />
+                <!-- <span id="taskTimeInput">{{ time_entry.time_spent }}</span> -->
             </div>
 
             <div class="task-remove-row">

@@ -86,19 +86,41 @@ body {
 
 .project-name-col {
     display: inline-block;
-    width: 15%;
+    width: 30%;
 }
 
 .task-name-col > input{
     width: 80%;
     padding: .608rem .75rem;
     font-size: 1rem;
-    font-weight: 400;
+    /* font-weight: 400; */
 }
+
+.task-start-end-time-col {
+    display: inline-block;
+    width: 20%;
+}
+
+/* .task-start-end-time-col input {
+    display: inline-block;
+} */
 
 .task-start-time-col, .task-end-time-col {
     display: inline-block;
-    width: 10%;
+    width: 30%;
+}
+
+.task-end-time-col {
+    margin-left: 5px;
+}
+
+.task-start-time-col input{
+    text-align: right;
+}
+
+.task-start-time-col input, .task-end-time-col input {
+    width: 90%;
+    text-align: center;
 }
 
 .task-time-col {
@@ -110,10 +132,16 @@ input {
     height: 2.2rem;
     outline: none;
     font-family: 'Roboto Slab';
+    font-size: 1rem;
 }
 
 input:hover {
     border: 1px solid grey;
+}
+
+#taskTimeInput {
+    border: none;
+    font-weight: bold;
 }
 
 .task-remove-row > .close{

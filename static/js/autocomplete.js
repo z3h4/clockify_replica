@@ -16,7 +16,7 @@ getTaskList = () => {
                 resolve(taskItems);
             }
             else {
-                reject(this.status);
+                reject(new Error(this.status));
             }
         }
         xhr.send();
