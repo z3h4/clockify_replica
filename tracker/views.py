@@ -34,15 +34,32 @@ class ProjectList(View):
         projects = Project.objects.order_by('-id').values()
         return JsonResponse({'projects': list(projects)}, status=200)
 
-# TODO: The name should create a new entry if not present in the database
-
 
 class TaskUpdate(View):
     def post(self, request, id):
         data = json.loads(request.body)
-        task = Task.objects.get(id=id)
-        task.name = data['name']
-        task.save()
+
+        try:
+            if 'project_id' in data:
+                task = Task.objects.get(id=id)
+                task.project_id = data['project_id']
+                task.save()
+            if 'name' in data:
+                exists = Task.objects.filter(
+                    project_id=data['project_id'], name=data['name']).exists()
+                if exists:
+                    task = Task.objects.get(name=data['name'])
+                    task.name = data['name']
+                    task.save()
+                else:
+                    task = Task.objects.create(
+                        name=data['name'], project_id=data['project_id'])
+                    time_entry = TimeEntry.objects.get(
+                        id=data['time_entry_id'])
+                    time_entry.task_id = task.id
+                    time_entry.save()
+        except Task.DoesNotExist:
+            return JsonResponse({'result': 'ok'}, status=404)
 
         return JsonResponse({'task': model_to_dict(task)}, status=200)
 
@@ -55,20 +72,18 @@ class TaskList(View):
 
 class TimeEntryCreate(View):
     def post(self, request):
-        # form = ProjectForm(request.POST)
         data = json.loads(request.body)
-        # TODO: trim the input
-        try:
-            # task = Task.objects.get(name=data['name'])
-            # task = Task.objects.get(id=data['task_id'])
-            # time_entry = TimeEntry.objects.create(task_id=task.id, start_time=timezone.now())
+
+        if data['task_id'] is None:
+            task = Task.objects.create(
+                name=data['name'], project_id=data['project_id'])
+            time_entry = TimeEntry.objects.create(
+                task_id=task.id, start_time=timezone.now())
+        else:
             time_entry = TimeEntry.objects.create(
                 task_id=data['task_id'], start_time=timezone.now())
-            return JsonResponse({'time_entry': model_to_dict(time_entry)}, status=200)
-            # return JsonResponse({'result': 'ok'}, status=200)
-        except Task.DoesNotExist:
-            # TODO: Create new task
-            print("Xxxxxxxxxxxxafhgjhaksjasxxa")
+
+        return JsonResponse({'time_entry': model_to_dict(time_entry)}, status=200)
 
 
 class TimeEntryUpdate(View):
@@ -93,8 +108,6 @@ class TimeEntryUpdate(View):
 
             return JsonResponse({'time_entry': model_to_dict(time_entry), 'time_spent': time_spent}, status=200)
         elif 'end_time' in data:
-            print(time_entry.end_time)
-
             if time_entry.end_time is None:
                 time_entry.end_time = timezone.now()
                 time_entry.task_time = (
@@ -103,6 +116,7 @@ class TimeEntryUpdate(View):
 
                 new_entries = {
                     'task_name': time_entry.task.name,
+                    'project_id': time_entry.task.project.id,
                     'project_name': time_entry.task.project.name,
                     'start_time': timezone.localtime(time_entry.start_time).strftime('%I:%M%p'),
                     'end_time': timezone.localtime(time_entry.end_time).strftime('%I:%M%p'),
@@ -134,11 +148,6 @@ class TimeEntryDelete(View):
         time_entry.delete()
         return JsonResponse({'result': 'ok'}, status=200)
 
-# class TimeEntryList(View):
-#     def get(self, request):
-#         time_entries = TimeEntry.objects.all()
-#         return render(request, 'tracker/time_entry_list.html', context={'time_entries': time_entries})
-
 
 class Dashboard(View):
     def get(self, request):
@@ -151,7 +160,7 @@ class Dashboard(View):
 
             if total_task_time_in_seconds['task_time__sum'] is not None:
                 new_dict = {'date': datetime.strftime(task_date.date(), '%Y-%m-%d'), 'hours':
-                            '{0:.2f}'.format(total_task_time_in_seconds['task_time__sum'] / 60)}
+                            '{0:.2f}'.format(total_task_time_in_seconds['task_time__sum'] / (60 * 60))}
 
             else:
                 new_dict = {'date': datetime.strftime(

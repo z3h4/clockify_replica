@@ -11,14 +11,11 @@
             </div>
             {% endfor %}
 
-
             <div id="autocomplete_result" style="display: none;"></div>
-
 
             <div class="project-name-container">
                 <a href="" id="projectDropdownToggle" onclick="showDropdown(event)"></a>
                 <div class="dropdown-content" id="dropdownContent">
-
                 </div>
             </div>
 
@@ -46,13 +43,13 @@
                     {% csrf_token %}
 
                     <div class="task-name-col">
-                        <input type="text" value="{{ time_entry.task }}" data-id={{ time_entry.task_id }}
-                            onfocusout="taskNameChanged(this)" />
+                        <input type="text" value="{{ time_entry.task }}" data-id={{ time_entry.task_id }} data-project-id={{ time_entry.task.project.id }} data-time-entry-id={{ time_entry.id }} onchange="taskNameChanged(this)" />
                     </div>
                 </form>
 
                 <div class="project-name-col">
-                    <span>{{ time_entry.task.project }}</span>
+                    <a class="project-name-link" href="" data-task-id={{ time_entry.task.id }} data-project-id={{ time_entry.task.project.id }}>{{ time_entry.task.project }}</a>
+                    <div class="dropdown-content"></div>
                 </div>
 
                 <div class="task-start-end-time-col">

@@ -13,6 +13,7 @@ getTaskList = () => {
                 const response = JSON.parse(xhr.response);
                 for (let res of response.tasks)
                     taskItems.push({id: res.id, name: res.name});
+
                 resolve(taskItems);
             }
             else {
@@ -74,7 +75,7 @@ onKeyUp = function(e) {
 
 initAutocompleteList = async() => {
     try {
-        taskList = await getTaskList();        
+        taskList = await getTaskList();
     }
     catch (ex) {
         console.log("Error getting Project List", ex);
