@@ -3,8 +3,9 @@ from django.views.generic import View
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.forms.models import model_to_dict
+from django.db.models import Sum
 
-# from datetime import datetime
+from datetime import datetime, timedelta
 from django.utils import timezone
 import json
 
@@ -58,9 +59,11 @@ class TimeEntryCreate(View):
         data = json.loads(request.body)
         # TODO: trim the input
         try:
-            task = Task.objects.get(name=data['name'])
+            # task = Task.objects.get(name=data['name'])
+            # task = Task.objects.get(id=data['task_id'])
+            # time_entry = TimeEntry.objects.create(task_id=task.id, start_time=timezone.now())
             time_entry = TimeEntry.objects.create(
-                task_id=task.id, start_time=timezone.now())
+                task_id=data['task_id'], start_time=timezone.now())
             return JsonResponse({'time_entry': model_to_dict(time_entry)}, status=200)
             # return JsonResponse({'result': 'ok'}, status=200)
         except Task.DoesNotExist:
@@ -135,3 +138,25 @@ class TimeEntryDelete(View):
 #     def get(self, request):
 #         time_entries = TimeEntry.objects.all()
 #         return render(request, 'tracker/time_entry_list.html', context={'time_entries': time_entries})
+
+
+class Dashboard(View):
+    def get(self, request):
+        date_hours_list = []
+
+        for i in reversed(range(7)):
+            task_date = timezone.now() - timedelta(days=i)
+            total_task_time_in_seconds = TimeEntry.objects.filter(
+                start_time__range=[task_date.date(), (task_date + timedelta(days=1)).date()]).aggregate(Sum('task_time'))
+
+            if total_task_time_in_seconds['task_time__sum'] is not None:
+                new_dict = {'date': datetime.strftime(task_date.date(), '%Y-%m-%d'), 'hours':
+                            '{0:.2f}'.format(total_task_time_in_seconds['task_time__sum'] / 60)}
+
+            else:
+                new_dict = {'date': datetime.strftime(
+                    task_date.date(), '%Y-%m-%d'), 'hours': 0}
+
+            date_hours_list.append(dict(new_dict))
+
+        return JsonResponse({'result': date_hours_list}, status=200)

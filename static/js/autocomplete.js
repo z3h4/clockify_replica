@@ -12,7 +12,7 @@ getTaskList = () => {
                 let taskItems = [];
                 const response = JSON.parse(xhr.response);
                 for (let res of response.tasks)
-                    taskItems.push(res.name);
+                    taskItems.push({id: res.id, name: res.name});
                 resolve(taskItems);
             }
             else {
@@ -35,7 +35,7 @@ autocomplete = (val) => {
         return taskList;
   
     for (i = 0; i < taskList.length; i++) {
-      if (val.toLowerCase() === taskList[i].slice(0, val.length).toLowerCase()) {
+      if (val.toLowerCase() === taskList[i].name.slice(0, val.length).toLowerCase()) {
         item_return.push(taskList[i]);
       }
     }
@@ -51,14 +51,14 @@ filterData = (input_val) => {
     
     for (i = 0; i < items_to_show.length; i++) {
         let element = document.createElement("p");
-        element.innerHTML = items_to_show[i];
+        element.setAttribute('data-id', items_to_show[i].id);
+        element.innerHTML = items_to_show[i].name;
 
         element.addEventListener("click", function(e) {
-            e.stopPropagation();
-            
             input.value = this.innerText;
             popupClearAndHide();
 
+            input.setAttribute('data-id', this.getAttribute('data-id'));
             // Start the timer
             startButton.click();
         });

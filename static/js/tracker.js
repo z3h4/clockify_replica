@@ -16,7 +16,7 @@ startButton.addEventListener("click", async(e) => {
         stopTimer();
 
         try{
-            await updateEndTimeAndAppendToTaskList(input.getAttribute('data-id'), document.getElementById('taskTimer').innerHTML);
+            await updateEndTimeAndAppendToTaskList(input.getAttribute('data-time-entry-id'), document.getElementById('taskTimer').innerHTML);
         }
         catch (ex) {
             console.log(ex);
@@ -34,14 +34,17 @@ createTimeEntry = () => {
             if (this.status === 200) {
                 const response = JSON.parse(xhr.response);
                 const time_entry = response.time_entry;
-                input.setAttribute('data-id', time_entry.id);
+                input.setAttribute('data-time-entry-id', time_entry.id);
                 resolve("SUCCESS");
             }
             else {
                 reject(new Error(`Response status: ${this.status}`));
             }
         }
-        xhr.send(JSON.stringify({ projectId: 1, name: input.value}));
+        const taskId = input.getAttribute('data-id');
+        const projectId = projectDropdownToggle.getAttribute('data-id');
+
+        xhr.send(JSON.stringify({ projectId: projectId, task_id: taskId, name: input.value}));
     });
 
 }
@@ -118,27 +121,6 @@ updateEndTime = (timeEntryId, newTime) => {
     });
 };
 
-calculateTaskTime = (startTime, endTime) => {
-    const startTimeArr = startTime.split(":");
-    const endTimeArr = endTime.split(":");
-    const startTimeinSeconds = parseInt(startTimeArr[0]) * 60 + parseInt(startTimeArr[1]);
-    const endTimeinSeconds = parseInt(endTimeArr[0]) * 60 + parseInt(endTimeArr[1]);
-
-    return endTimeinSeconds - startTimeinSeconds;
-}
-
-
-formatTaskTime = (diff, dataId) => {
-    const minutes = diff % 60;
-    const hours = Math.floor(diff / 60);
-    const seconds = document.querySelector('[data-task-id="' + dataId + '"]').value.split(":")[2];
-    
-    formattedTime = (hours === 0 ? '00' : hours > 9 ? hours : ('0' + hours)) + ':';
-    formattedTime += (minutes === 0 ? '00' : minutes > 9 ? minutes : ('0' + minutes)) + ':';
-    formattedTime += seconds;
-    return formattedTime;
-}
-
 var taskStartTimeInputs = document.getElementsByClassName('task-start-time-input');
 
 for(var i = 0; i < taskStartTimeInputs.length; i++) {
@@ -187,8 +169,6 @@ for(var i = 0; i < taskEndTimeInputs.length; i++) {
         }
     })
 }
-
-
 
 taskNameChanged = (e) => {
     const dataId = e.getAttribute("data-id");

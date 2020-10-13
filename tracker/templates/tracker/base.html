@@ -8,9 +8,17 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/dropdown.css' %}">
     <link rel="stylesheet" href="{% static 'css/autocomplete.css' %}">
+    <link rel="stylesheet" href="{% static 'css/graph.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+    <script src="https://d3js.org/d3.v5.min.js"></script>
     <title>Clockify Replica</title>
 </head>
 <body>
+    <div class="topnav">
+        <a class="active" href="" id="trackerNavBar" onclick="ontrackerNavBarClick(event)">Tracker</a>
+        <a href="" id="dashBoardNavBar" onclick="ondashBoardNavBarClick(event)">Dashboard</a>
+    </div>
+
     {% block content %}
     {% endblock  %}
 
@@ -18,5 +26,8 @@
     <script src="{% static 'js/timer.js' %}"></script>
     <script src="{% static 'js/dropdown.js' %}"></script>
     <script src="{% static 'js/autocomplete.js' %}"></script>
+    <script src="{% static 'js/graph.js' %}"></script>
+    <script src="{% static 'js/navbar.js' %}"></script>
+    {% comment %} <script src="{% static 'js/d3.min.js' %}"></script> {% endcomment %}
 </body>
 </html>

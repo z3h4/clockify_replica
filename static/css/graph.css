@@ -1,0 +1,7 @@
+rect {
+    fill: steelblue;
+}
+
+rect:hover {
+    opacity: 0.90;
+}

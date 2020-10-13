@@ -12,6 +12,7 @@ urlpatterns = [
     path('task_list', TaskList.as_view(), name='task_list_url'),
     path('project_list', ProjectList.as_view(), name='project_list_url'),
     path('time_entry/<str:id>/update',
-         TimeEntryUpdate.as_view(), name='project_list_url')
+         TimeEntryUpdate.as_view(), name='project_list_url'),
 
+    path('dashboard', Dashboard.as_view(), name='dashboard_url')
 ]
