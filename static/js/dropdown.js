@@ -47,7 +47,7 @@ showDropdown = (e) => {
     dropdownContainer.style.display = 'block';
 }
 
-function hideDropdown() {
+hideDropdown = () => {
     dropdownContainer.style.display = "none";
 }
 

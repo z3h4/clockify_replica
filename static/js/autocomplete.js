@@ -22,7 +22,6 @@ getTaskList = () => {
         xhr.send();
     });
 }
-
  
 popupClearAndHide = () => {
     autocomplete_result.innerHTML = "";
@@ -64,7 +63,6 @@ filterData = (input_val) => {
         });
 
         autocomplete_results.appendChild(element);
-
     }
     autocomplete_results.style.display = 'block';
 }
@@ -73,11 +71,6 @@ onKeyUp = function(e) {
     let input_val = this.value; 
     filterData(input_val);
 }
-
-input.addEventListener('click', function() {
-    let input_val = this.value; 
-    filterData(input_val);
-});
 
 initAutocompleteList = async() => {
     try {
@@ -89,6 +82,11 @@ initAutocompleteList = async() => {
 }
 
 input.addEventListener("keyup", onKeyUp);
+
+input.addEventListener('click', function() {
+    let input_val = this.value; 
+    filterData(input_val);
+});
 
 document.addEventListener("click", function (e) {
     if (autocomplete_results !== e.target && input !== e.target) {    

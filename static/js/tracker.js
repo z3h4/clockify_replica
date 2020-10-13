@@ -42,9 +42,10 @@ createTimeEntry = () => {
             }
         }
         const taskId = input.getAttribute('data-id');
+        console.log(taskId);
         const projectId = projectDropdownToggle.getAttribute('data-id');
 
-        xhr.send(JSON.stringify({ projectId: projectId, task_id: taskId, name: input.value}));
+        // xhr.send(JSON.stringify({ projectId: projectId, task_id: taskId, name: input.value}));
     });
 
 }
